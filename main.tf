@@ -98,6 +98,14 @@ resource "oci_core_volume" "block_volume" {
   size_in_gbs         = var.volume_size
 }
 
+#Attaching the storage to the instance
+resource "oci_core_volume_attachment" "volume_attachment_to_instance" {
+  instance_id        = oci_core_instance.compute_instance.id
+  volume_id          = oci_core_volume.block_volume.id
+  display_name       = "volume-attachment-to-instance"
+  is_read_only       = false
+}
+
 #SSH key pair 
 resource "oci_identity_ssh_key" "instance_ssh_key" {
   compartment_id = var.mycompartment_id
