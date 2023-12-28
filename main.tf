@@ -85,6 +85,9 @@ resource "oci_core_instance" "compute_instance" {
     availability_domain = values(var.subnet_cidr_block)[0].availability_domain
     compartment_id = var.mycompartment_id
     shape = var.instance_shape
+    metadata = {
+      ssh_authorized_keys = oci_identity_ssh_key.instance_ssh_key.ssh_public_key
+  }
 }
 
 #storage
