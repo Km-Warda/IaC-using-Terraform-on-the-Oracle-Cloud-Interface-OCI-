@@ -247,25 +247,34 @@ resource "oci_identity_ssh_key" "instance_ssh_key" {
 }
 ```
 # Backend.tf
-For storing the terraform state file remotely, so that errors can be avoided if multiple interactions were made by different code moderators, as it must stay the same for everyone.
-The state file is created on an OCI block storage bucket. It's resource block can be found in the `main.tf` file
-```
-#Block storage for remote tfstate file
-resource "oci_objectstorage_bucket" "tfstate_bucket" {
-    compartment_id = var.mycompartment_id
-    name = "tfstate_bucket"
-    namespace = "remote_tfstate_file"
-}
-```
+For storing the terraform state file remotely 'AWS S3 is used here', so that errors can be avoided if multiple interactions were made by different code moderators, as it must stay the same for everyone.
+The state file is created on an OCI block storage bucket.
+**Instructions:**
+
+1. **Create an S3 Bucket:**
+   - Log in to the [AWS Management Console](https://aws.amazon.com/console/).
+   - Navigate to the S3 service.
+   - Create a new bucket, ensuring it has a globally unique name.
+
+2. **Define S3 Bucket Details in `backend.tf`:**
+   - Replace `"terraform-state-bucket"` with the unique name of the S3 bucket you created.
+   - Choose a unique name for the bucket to avoid conflicts with other users or teams.
+
+3. **Set AWS Region:**
+   - Replace `"your-preferred-aws-region"` with your preferred AWS region (e.g., `"us-west-2"` is used).
+
+4. **Enable Server-Side Encryption:**
+   - Set `encrypt` to `true` if you want to enable server-side encryption for the Terraform state file
+
 And this is the code of the `backend.tf` file itself.
 ```
 terraform {
-  backend "oci_objectstorage_bucket" {
-    bucket         = "tfstate_bucket"
-    key            = "terraform.tfstate"
-    namespace      = "remote_tfstate_file"
-    encrypt        = true
-  }
+  backend "s3" {
+    bucket         = "terraform-state-bucket"
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+    encrypt        = true
+  }
 }
 ```
 # Terraform.tfvars
