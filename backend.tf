@@ -1,8 +1,8 @@
 terraform {
-  backend "oci_objectstorage_bucket" {
-    bucket         = "tfstate_bucket"
+  backend "s3" {
+    bucket         = "terraform-state-bucket"
     key            = "terraform.tfstate"
-    namespace      = "remote_tfstate_file"
+    region         = "us-east-1"
     encrypt        = true
   }
 }
