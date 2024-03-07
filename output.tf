@@ -8,8 +8,8 @@ output "subnet_ids" {
 output "vcn_id" {
   value = module.vcn.vcn_id
 }
-output "ig_route_id" {
-  value = module.vcn.ig_route_id
+output "internet_gateway_id" {
+  value = oci_core_internet_gateway.internet_gateway.id
 }
 
 
