@@ -1,4 +1,17 @@
-#OCI VCN module was used
+#OCI Official VCN module was used
+module "vcn" {
+  source  = "oracle-terraform-modules/vcn/oci"
+  version = "3.6.0"
+  compartment_id = var.mycompartment_id 
+  create_internet_gateway = true
+  vcn_name = "primary_vcn"
+  defined_tags = "operations"
+  region = var.region
+  vcn_cidrs = var.vcn_cidr_block
+  subnets = var.subnet_cidr_block
+  internet_gateway_route_rules = var.routes
+}
+
 
 #Security list
 resource "oci_core_security_list" "subnet_security_list" {
@@ -111,14 +124,4 @@ resource "oci_identity_ssh_key" "instance_ssh_key" {
   compartment_id = var.mycompartment_id
   display_name   = "ssh-key"
   key            = file(var.ssh_public_key_path)
-}
-
-
-
-
-#Block storage for remote tfstate file
-resource "oci_objectstorage_bucket" "tfstate_bucket" {
-    compartment_id = var.mycompartment_id
-    name = "tfstate_bucket"
-    namespace = "remote_tfstate_file"
 }

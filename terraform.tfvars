@@ -15,5 +15,5 @@ instance_shape = "VM.Standard2.1"
 
 volume_size = 50
 
-ssh_public_key_path = "~/.ssh/sshkeey.pub"
+ssh_public_key_path = "~/.ssh/sshkey.pub"
 ssh_client_ip= "156.197.32.210"

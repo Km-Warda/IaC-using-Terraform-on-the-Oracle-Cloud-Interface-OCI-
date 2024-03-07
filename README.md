@@ -41,7 +41,7 @@ provider "oci" {
 ```
 # Services
 ## VCN
-I used the official OCI module for the VCN, in the `VCN/vcn.tf` , which sets & creates:
+The official OCI module for the VCN was used, which sets & creates:
 - VCN
 - Internet Gateway
 - VCN CIDR Blocks
@@ -63,7 +63,7 @@ module "vcn" {
 }
 ```
 
-The `VCN/output.tf` file shows the outputs of the module:
+The `output.tf` file has the outputs of the module:
 ```
 output "internet_gateway_id" {
   value = module.vcn.internet_gateway_id
@@ -81,34 +81,38 @@ output "ig_route_id" {
 
 The required parameters for this module is defined in the `variables.tf` file
 ```
-variable "region" {  
-  default     = "us-ashburn-1"
+variable "region" {  
+  default     = "us-ashburn-1"
 }
 variable "mycompartment_id" {
-  default = "<Account ID>"
-} 
-variable  "vcn_cidr_block" {
-  default = ["10.0.0.0/16"]
+  default = "<Account ID>"
+}
+
+variable  "vcn_cidr_block" {
+  default = ["10.0.0.0/16"]
 }
 variable "subnet_cidr_block" {
-  { subnet1 = {
-      cidr_block     = "10.0.0.0/24"
-      display_name   = "subnet1"
-      availability_domain = "AD-1"
-    }
-  }
-}  
+  default = [
+    {
+      subnet1 = {
+        cidr_block          = "10.0.0.0/24"
+        display_name        = "subnet1"
+        availability_domain = "AD-1"
+      }
+    }
+  ]
+}
 variable "routes" {
-  type = list(object({
-    destination = string
-    network_id  = string
-  }))
-  default = [
-    {
-      destination = "0.0.0.0/0"
-      network_id  = module.vcn.internet_gateway_id
-    },
-  ]
+  type = list(object({
+    destination = string
+    network_id  = string
+  }))
+  default = [
+    {
+      destination = "0.0.0.0/0"
+      network_id  = module.vcn.internet_gateway_id
+    }
+  ]
 }
 ```
 
@@ -212,7 +216,7 @@ resource "oci_core_instance" "compute_instance" {
 ```
 
 ## Storage
-This is the storage volume to be attached to the instance. To attach it, it's required to create another resource called volume attachment resource.
+This is additional storage volume to be attached to the instance. To attach it, it's required to create another resource called volume attachment resource.
 
 - This is the code for creating the storage volume, its size can be changed through the variable `volume_size`
 ```
@@ -234,6 +238,29 @@ resource "oci_core_volume_attachment" "volume_attachment_to_instance" {
   is_read_only       = false
 }
 ```
+The `output.tf` file has the outputs of these resources:
+```
+#Instance outputs
+output "instance_id" {
+  value = oci_core_instance.compute_instance.id
+}
+output "instance_public_ip" {
+  value = oci_core_instance.compute_instance.public_ip
+}
+output "instance_private_ip" {
+  value = oci_core_instance.compute_instance.private_ip
+}
+#Storage outputs
+output "block_volume_id" {
+  value       = oci_core_volume.block_volume.id
+}
+output "block_volume_display_name" {
+  value       = oci_core_volume.block_volume.display_name
+}
+output "block_volume_size" {
+  value       = oci_core_volume.block_volume.size_in_gbs
+}
+```
 
 ## Key Pair
 For accessing the instance, we allowed the SSH port for the connection, but we need a key pair that we defined in the instance metadata before, we will have the privat4e key locally, & define the public key on the instance.
@@ -246,6 +273,7 @@ resource "oci_identity_ssh_key" "instance_ssh_key" {
   key            = file(var.ssh_public_key_path)
 }
 ```
+
 # Backend.tf
 For storing the terraform state file remotely 'AWS S3 is used here', so that errors can be avoided if multiple interactions were made by different code moderators, as it must stay the same for everyone.
 The state file is created on an OCI block storage bucket.
@@ -257,11 +285,11 @@ The state file is created on an OCI block storage bucket.
    - Create a new bucket, ensuring it has a globally unique name.
 
 2. **Define S3 Bucket Details in `backend.tf`:**
-   - Replace `"terraform-state-bucket"` with the unique name of the S3 bucket you created.
+   - Replace `"terraform-state-bucket-unique-name-karim"` with the unique name of the S3 bucket you created.
    - Choose a unique name for the bucket to avoid conflicts with other users or teams.
 
 3. **Set AWS Region:**
-   - Replace `"your-preferred-aws-region"` with your preferred AWS region (e.g., `"us-west-2"` is used).
+   - Replace the `region` with your preferred AWS region (e.g., `"us-east-1"` is used).
 
 4. **Enable Server-Side Encryption:**
    - Set `encrypt` to `true` if you want to enable server-side encryption for the Terraform state file
@@ -270,7 +298,7 @@ And this is the code of the `backend.tf` file itself.
 ```
 terraform {
   backend "s3" {
-    bucket         = "terraform-state-bucket"
+    bucket         = "terraform-state-bucket-unique-name-karim"
     key            = "terraform.tfstate"
     region         = "us-east-1"
     encrypt        = true

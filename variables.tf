@@ -5,20 +5,20 @@ variable "mycompartment_id" {
   default = "<Account ID>"
 }
 
-
 variable  "vcn_cidr_block" {
   default = ["10.0.0.0/16"]
 }
 variable "subnet_cidr_block" {
-  { subnet1 = {
-      cidr_block     = "10.0.0.0/24"
-      display_name   = "subnet1"
-      availability_domain = "AD-1"
+  default = [
+    {
+      subnet1 = {
+        cidr_block          = "10.0.0.0/24"
+        display_name        = "subnet1"
+        availability_domain = "AD-1"
+      }
     }
-  }
+  ]
 }
-
-
 variable "routes" {
   type = list(object({
     destination = string
@@ -28,8 +28,7 @@ variable "routes" {
     {
       destination = "0.0.0.0/0"
       network_id  = module.vcn.internet_gateway_id
-      
-    },
+    }
   ]
 }
 
@@ -83,10 +82,10 @@ variable "volume_size" {
 
 variable "ssh_public_key_path" {
   type    = string
-  default = "~/.ssh/sshkeey.pub"  # public SSH key path
+  default = "~/.ssh/sshkey.pub"  # public SSH key path
 }
 #The IP address of the SSH client
 variable "ssh_client_ip" {
-  type: string
+  type    = string
   default = "156.197.32.210"  #example
 }
