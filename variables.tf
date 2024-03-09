@@ -33,40 +33,61 @@ variable "routes" {
 }
 
 
-variable "egress_destination" {
-  type    = string
-  default = "0.0.0.0/0" #all outbound is permited
-}
-variable "egress_protocol" {
-  type    = string
-  default = "tcp"
-}
-variable "egress_max_destination_port" {
-  type = string
-  default = "65535"
-}
-variable "egress_min_destination_port" {
-  type = string
-  default = "1"
+variable "egress_rules" {
+  type = map(object({
+    destination = string
+    protocol    = string
+    tcp_options = object({
+      max               = string
+      min               = string
+      source_port_range = object({
+        max = string
+        min = string
+      })
+    })
+  }))
+
+  default = {
+    destination = "0.0.0.0/0"
+    protocol    = "tcp"
+    tcp_options = {
+      max = "65535"
+      min = "1"
+      source_port_range = {
+        max = "65535"
+        min = "1"
+      }
+    }
+  }
 }
 
-variable "ingress_destination" {
-  type    = string
-  default = "10.0.0.0/16"  #all services in my vcn
-}
-variable "ingress_protocol" {
-  type    = string
-  default = "tcp"
-}
-variable "ingress_max_destination_port" {
-  type = string
-  default = "3000"
-}
-variable "ingress_min_destination_port" {
-  type = string
-  default = "3000"
-}
+variable "ingress_rules" {
+  type = map(object({
+    source      = string
+    protocol    = string
+    tcp_options = object({
+      max               = string
+      min               = string
+      source_port_range = object({
+        max = string
+        min = string
+      })
+    })
+  }))
 
+  default = {
+    source    = "10.0.0.0/16"
+    protocol  = "tcp"
+    tcp_options = {
+      max = "3000"
+      min = "3000"
+      source_port_range = {
+        max = "65535"
+        min = "1"
+      }
+    }
+  }
+}
 
 variable "instance_shape" {
   type    = string

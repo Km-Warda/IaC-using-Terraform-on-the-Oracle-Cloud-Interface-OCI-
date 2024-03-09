@@ -31,80 +31,88 @@ resource "oci_core_subnet_route_table_association" "association" {
 
 #Security list
 resource "oci_core_security_list" "subnet_security_list" {
-    compartment_id = var.mycompartment_id
-    vcn_id = module.vcn.vcn_id
-    egress_security_rules {
-      destination = var.egress_destination
-      protocol = var.egress_protocol
-      tcp_options {
-        max = var.egress_max_destination_port
-        min = var.egress_min_destination_port
-        source_port_range {
-          max = var.egress_max_source_port
-          min = var.egress_min_source_port
-        }
+  compartment_id = var.mycompartment_id
+  vcn_id         = module.vcn.vcn_id
+  egress_security_rules {
+    destination = var.egress_rules["destination"]
+    protocol    = var.egress_rules["protocol"]
+
+    tcp_options {
+      max = var.egress_rules["tcp_options"]["max"]
+      min = var.egress_rules["tcp_options"]["min"]
+
+      source_port_range {
+        max = var.egress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.egress_rules["tcp_options"]["source_port_range"]["min"]
       }
     }
-    ingress_security_rules {
-      source = var.ingress_destination
-      protocol = var.ingress_protocol
-      tcp_options {
-        max = var.ingress_max_destination_port
-        min = var.ingress_min_destination_port
-        source_port_range {
-          max = var.ingress_max_source_port
-          min = var.ingress_min_source_port
-        }
+  }
+  ingress_security_rules {
+    source    = var.ingress_rules["source"]
+    protocol  = var.ingress_rules["protocol"]
+
+    tcp_options {
+      max = var.ingress_rules["tcp_options"]["max"]
+      min = var.ingress_rules["tcp_options"]["min"]
+
+      source_port_range {
+        max = var.ingress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.ingress_rules["tcp_options"]["source_port_range"]["min"]
       }
     }
-    #Allowing SSH (port 22)
-    ingress_security_rules {
-      source      = var.ssh_client_ip
-      protocol    = "tcp"
-      tcp_options {
-        max = 22
-        min = 22
-      }
+  }
+  #Allowing SSH (port 22)
+  ingress_security_rules {
+    source      = var.ssh_client_ip
+    protocol    = "tcp"
+    tcp_options {
+      max = 22
+      min = 22
     }
+  }
 }
 
 #security group
 resource "oci_core_security_group" "instance_security_group" {
   compartment_id = var.mycompartment_id
   vcn_id         = module.vcn.vcn_id
-     egress_security_rules {
-      destination = var.egress_destination
-      protocol = var.egress_protocol
-      tcp_options {
-        max = var.egress_max_destination_port
-        min = var.egress_min_destination_port
-        source_port_range {
-          max = var.egress_max_source_port
-          min = var.egress_min_source_port
-        }
+  egress_security_rules {
+    destination = var.egress_rules["destination"]
+    protocol    = var.egress_rules["protocol"]
+
+    tcp_options {
+      max = var.egress_rules["tcp_options"]["max"]
+      min = var.egress_rules["tcp_options"]["min"]
+
+      source_port_range {
+        max = var.egress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.egress_rules["tcp_options"]["source_port_range"]["min"]
       }
     }
-    ingress_security_rules {
-      source = var.ingress_destination
-      protocol = var.ingress_protocol
-      tcp_options {
-        max = var.ingress_max_destination_port
-        min = var.ingress_min_destination_port
-        source_port_range {
-          max = var.ingress_max_source_port
-          min = var.ingress_min_source_port
-        }
+  }
+  ingress_security_rules {
+    source    = var.ingress_rules["source"]
+    protocol  = var.ingress_rules["protocol"]
+
+    tcp_options {
+      max = var.ingress_rules["tcp_options"]["max"]
+      min = var.ingress_rules["tcp_options"]["min"]
+
+      source_port_range {
+        max = var.ingress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.ingress_rules["tcp_options"]["source_port_range"]["min"]
       }
     }
-    #Allowing SSH (port 22)
-    ingress_security_rules {
-      source      = var.ssh_client_ip
-      protocol    = "tcp"
-      tcp_options {
-        max = 22
-        min = 22
-      }
+  }
+  #Allowing SSH (port 22)
+  ingress_security_rules {
+    source      = var.ssh_client_ip
+    protocol    = "tcp"
+    tcp_options {
+      max = 22
+      min = 22
     }
+  }
 }
 
 

@@ -141,84 +141,139 @@ variable "routes" {
 ## Security Lists & Security Groups
 The main difference between the security lists & the security groups, is that the security lists are for controlling egress & ingress access **on the subnet level**, while the security groups are for controlling egress & ingress access **on the instance level**.
 
-The code is in `main.tf`, it allows SSH for the device that would be specified & passed to the `ssh_client_ip` variable, as well as allowing all outbound connections & inbound connection for the port `3000`, all the port ranges & protocol types can be updated through variables in the `variables.tf` file.
+The code is in `main.tf`, it allows SSH for the device that would be specified & passed to the `ssh_client_ip` variable, as well as allowing all outbound connections & inbound connection for the port `3000`, all the source ports are allowd for now, so the connection is only stricted on the seide of the host.
 ```
 #Security list
 resource "oci_core_security_list" "subnet_security_list" {
-    compartment_id = var.mycompartment_id
-    vcn_id = module.vcn.vcn_id
-    egress_security_rules {
-      destination = var.egress_destination
-      protocol = var.egress_protocol
-      tcp_options {
-        max = var.egress_max_destination_port
-        min = var.egress_min_destination_port
-        source_port_range {
-          max = var.egress_max_source_port
-          min = var.egress_min_source_port
-        }
-      }
-    }
-    ingress_security_rules {
-      source = var.ingress_destination
-      protocol = var.ingress_protocol
-      tcp_options {
-        max = var.ingress_max_destination_port
-        min = var.ingress_min_destination_port
-        source_port_range {
-          max = var.ingress_max_source_port
-          min = var.ingress_min_source_port
-        }
-      }
-    }
-    #Allowing SSH (port 22)
-    ingress_security_rules {
-      source      = var.ssh_client_ip
-      protocol    = "tcp"
-      tcp_options {
-        max = 22
-        min = 22
-      }
-    }
+  compartment_id = var.mycompartment_id
+  vcn_id         = module.vcn.vcn_id
+  egress_security_rules {
+    destination = var.egress_rules["destination"]
+    protocol    = var.egress_rules["protocol"]
+    tcp_options {
+      max = var.egress_rules["tcp_options"]["max"]
+      min = var.egress_rules["tcp_options"]["min"]
+      source_port_range {
+        max = var.egress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.egress_rules["tcp_options"]["source_port_range"]["min"]
+      }
+    }
+  }
+  ingress_security_rules {
+    source    = var.ingress_rules["source"]
+    protocol  = var.ingress_rules["protocol"]
+    tcp_options {
+      max = var.ingress_rules["tcp_options"]["max"]
+      min = var.ingress_rules["tcp_options"]["min"]
+      source_port_range {
+        max = var.ingress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.ingress_rules["tcp_options"]["source_port_range"]["min"]
+      }
+    }
+  }
+  #Allowing SSH (port 22)
+  ingress_security_rules {
+    source      = var.ssh_client_ip
+    protocol    = "tcp"
+    tcp_options {
+      max = 22
+      min = 22
+    }
+  }
 }
-
 #security group
 resource "oci_core_security_group" "instance_security_group" {
-  compartment_id = var.mycompartment_id
-  vcn_id         = module.vcn.vcn_id
-    egress_security_rules {
-      destination = var.egress_destination
-      protocol = var.egress_protocol
-      tcp_options {
-        max = var.egress_max_destination_port
-        min = var.egress_min_destination_port
-        source_port_range {
-          max = var.egress_max_source_port
-          min = var.egress_min_source_port
-        }
-      }
-    }
-    ingress_security_rules {
-      source = var.ingress_destination
-      protocol = var.ingress_protocol
-      tcp_options {
-        max = var.ingress_max_destination_port
-        min = var.ingress_min_destination_port
-        source_port_range {
-          max = var.ingress_max_source_port
-          min = var.ingress_min_source_port
-        }
-      }
-    }
-    #Allowing SSH (port 22)
-    ingress_security_rules {
-      source      = var.ssh_client_ip
-      protocol    = "tcp"
-      tcp_options {
-        max = 22
-        min = 22
-      }
-    }
+  compartment_id = var.mycompartment_id
+  vcn_id         = module.vcn.vcn_id
+  egress_security_rules {
+    destination = var.egress_rules["destination"]
+    protocol    = var.egress_rules["protocol"]
+    tcp_options {
+      max = var.egress_rules["tcp_options"]["max"]
+      min = var.egress_rules["tcp_options"]["min"]
+      source_port_range {
+        max = var.egress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.egress_rules["tcp_options"]["source_port_range"]["min"]
+      }
+    }
+  }
+  ingress_security_rules {
+    source    = var.ingress_rules["source"]
+    protocol  = var.ingress_rules["protocol"]
+    tcp_options {
+      max = var.ingress_rules["tcp_options"]["max"]
+      min = var.ingress_rules["tcp_options"]["min"]
+      source_port_range {
+        max = var.ingress_rules["tcp_options"]["source_port_range"]["max"]
+        min = var.ingress_rules["tcp_options"]["source_port_range"]["min"]
+      }
+    }
+  }
+  #Allowing SSH (port 22)
+  ingress_security_rules {
+    source      = var.ssh_client_ip
+    protocol    = "tcp"
+    tcp_options {
+      max = 22
+      min = 22
+    }
+  }
+}
+```
+-  all the port ranges & protocol types can be updated through variables in the `variables.tf` file
+```
+variable "egress_rules" {
+  type = map(object({
+    destination = string
+    protocol    = string
+    tcp_options = object({
+      max               = string
+      min               = string
+      source_port_range = object({
+        max = string
+        min = string
+      })
+    })
+  }))
+
+  default = {
+    destination = "0.0.0.0/0"
+    protocol    = "tcp"
+    tcp_options = {
+      max = "65535"
+      min = "1"
+      source_port_range = {
+        max = "65535"
+        min = "1"
+      }
+    }
+  }
+}
+variable "ingress_rules" {
+  type = map(object({
+    source      = string
+    protocol    = string
+    tcp_options = object({
+      max               = string
+      min               = string
+      source_port_range = object({
+        max = string
+        min = string
+      })
+    })
+  }))
+  default = {
+    source    = "10.0.0.0/16"
+    protocol  = "tcp"
+    tcp_options = {
+      max = "3000"
+      min = "3000"
+      source_port_range = {
+        max = "65535"
+        min = "1"
+      }
+    }
+  }
 }
 ```
 
