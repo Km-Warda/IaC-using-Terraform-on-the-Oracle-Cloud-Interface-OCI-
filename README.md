@@ -49,17 +49,16 @@ The official OCI module for the VCN was used, which sets & creates:
 - Internet Gateway route rules
 
 ```
+#OCI Official VCN module was used
 module "vcn" {
-  source  = "oracle-terraform-modules/vcn/oci"
-  version = "3.6.0"
-  compartment_id = var.mycompartment_id
-  create_internet_gateway = true
-  vcn_name = "primary_vcn"
-  defined_tags = "operations"
-  region = var.region
-  vcn_cidrs = var.vcn_cidr_block
-  subnets = var.subnet_cidr_block
-  internet_gateway_route_rules = var.routes
+  source  = "oracle-terraform-modules/vcn/oci"
+  version = "3.6.0"
+  compartment_id = var.mycompartment_id 
+  vcn_name = "primary_vcn"
+  defined_tags = "operations"
+  region = var.region
+  vcn_cidrs = var.vcn_cidr_block
+  subnets = var.subnet_cidr_block
 }
 ```
 
@@ -74,8 +73,8 @@ output "subnet_ids" {
 output "vcn_id" {
   value = module.vcn.vcn_id
 }
-output "ig_route_id" {
-  value = module.vcn.ig_route_id
+output "internet_gateway_id" {
+  value = oci_core_internet_gateway.internet_gateway.id
 }
 ```
 
@@ -102,6 +101,29 @@ variable "subnet_cidr_block" {
     }
   ]
 }
+```
+# Internet Gateway & route tables
+The resource block if the IG & the route tables, & associating them to the subnet:
+```
+#Internet Gateway
+resource "oci_core_internet_gateway" "internet_gateway" {
+  compartment_id = var.compartment_id
+  vcn_id         = module.vcn.vcn_id
+}
+#Route Table
+resource "oci_core_route_table" "route_table" {
+  compartment_id = var.mycompartment_id
+  vcn_id         = module.vcn.vcn_id
+  route_rules    = var.routes
+}
+#Route table association to the first subnet
+resource "oci_core_subnet_route_table_association" "association" {
+  subnet_id      = module.vcn.subnet_ids[0]
+  route_table_id = oci_core_route_table.route_table.id
+}
+```
+The routing rules are defined in the `variables.tf` file, & other required parameters are passed from the used VCN module:
+```
 variable "routes" {
   type = list(object({
     destination = string
