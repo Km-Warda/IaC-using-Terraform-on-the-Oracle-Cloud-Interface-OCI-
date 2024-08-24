@@ -1,5 +1,3 @@
-### Before Applying, remember to add your Compartment ID to your secrets (var.tfvar) file
-
 This project is a simple IaC application, creating a simple instance on the Oracle Cloud Infrastructure (OCI), in a public subnet with simple controlled access.
 
 It applies:
