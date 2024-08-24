@@ -13,15 +13,24 @@ module "vcn" {
 
 #Internet Gateway
 resource "oci_core_internet_gateway" "internet_gateway" {
-  compartment_id = var.compartment_id
+  compartment_id = var.mycompartment_id
   vcn_id         = module.vcn.vcn_id
 }
 #Route Table
 resource "oci_core_route_table" "route_table" {
   compartment_id = var.mycompartment_id
   vcn_id         = module.vcn.vcn_id
-  route_rules    = var.routes
+  dynamic "route_rules" {
+    for_each = var.routes
+    content {
+      network_entity_id = route_rules.value.network_entity_id
+      cidr_block         = route_rules.value.cidr_block
+      destination        = route_rules.value.destination
+      destination_type   = route_rules.value.destination_type
+    }
+  }
 }
+
 #Route table association to the first subnet
 resource "oci_core_subnet_route_table_association" "association" {
   subnet_id      = module.vcn.subnet_ids[0]
@@ -139,6 +148,7 @@ resource "oci_core_volume" "block_volume" {
 #Attaching the storage to the instance
 resource "oci_core_volume_attachment" "volume_attachment_to_instance" {
   instance_id        = oci_core_instance.compute_instance.id
+  attachment_type = "iscsi"
   volume_id          = oci_core_volume.block_volume.id
   display_name       = "volume-attachment-to-instance"
   is_read_only       = false
