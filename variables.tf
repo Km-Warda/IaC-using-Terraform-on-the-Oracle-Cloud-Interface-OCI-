@@ -1,9 +1,7 @@
 variable "region" {  
   default     = "us-ashburn-1"
 }
-variable "mycompartment_id" {
-  default = "<Account ID>"
-}
+variable "mycompartment_id" {}
 
 variable  "vcn_cidr_block" {
   default = ["10.0.0.0/16"]
@@ -19,17 +17,24 @@ variable "subnet_cidr_block" {
     }
   ]
 }
+
+
 variable "routes" {
-  type = list(object({
+  type = map(object({
+    network_entity_id = string
+    cidr_block  = string
     destination = string
-    network_id  = string
+    destination_type = string
   }))
-  default = [
-    {
-      destination = "0.0.0.0/0"
-      network_id  = module.vcn.internet_gateway_id
+  default = {
+    route1 = {
+      network_entity_id   = oci_core_internet_gateway.internet_gateway.id
+      cidr_block          = "10.0.0.0/24"
+      destination         = "10.0.0.0/24"
+      destination_type    = "CIDR"
     }
-  ]
+    #We can add more
+}
 }
 
 
