@@ -1,7 +1,9 @@
 variable "region" {  
   default     = "us-ashburn-1"
 }
-variable "mycompartment_id" {}
+variable "mycompartment_id" {
+  default = "<Account ID>"
+}
 
 variable  "vcn_cidr_block" {
   default = ["10.0.0.0/16"]
